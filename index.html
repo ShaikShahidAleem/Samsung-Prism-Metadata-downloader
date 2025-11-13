@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recording Metadata</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input:disabled {
+            background-color: #f9f9f9;
+            color: #666;
+        }
+        select {
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #successMessage {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+        #errorMessage {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Recording Metadata</h1>
+        <form id="metadataForm">
+            <div class="form-group">
+                <label for="audioIdName">Audio_id/name: <span style="color: red;">*</span></label>
+                <input type="text" id="audioIdName" name="audioIdName" required>
+            </div>
+            <div class="form-group">
+                <label for="audioIdUsed">Audio_id used: <span style="color: red;">*</span></label>
+                <input type="text" id="audioIdUsed" name="audioIdUsed" required>
+            </div>
+            <div class="form-group">
+                <label for="recordingEnvType">Recording Environment Type: <span style="color: red;">*</span></label>
+                <input type="text" id="recordingEnvType" name="recordingEnvType" required>
+            </div>
+            <div class="form-group">
+                <label for="roomType">Room Type: <span style="color: red;">*</span></label>
+                <input type="text" id="roomType" name="roomType" required>
+            </div>
+            <div class="form-group">
+                <label for="roomAcousticConditions">Room Acoustic Conditions: <span style="color: red;">*</span></label>
+                <input type="text" id="roomAcousticConditions" name="roomAcousticConditions" required>
+            </div>
+            <div class="form-group">
+                <label for="distance">Approximate Distance from Device to Microphone: <span style="color: red;">*</span></label>
+                <input type="number" id="distance" name="distance" min="0" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label for="noiseLevel">Background Noise Level: <span style="color: red;">*</span></label>
+                <select id="noiseLevel" name="noiseLevel" required>
+                    <option value="">Select Level</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="noiseType">Background Noise Type (if present): <span style="color: red;">*</span></label>
+                <input type="text" id="noiseType" name="noiseType" required>
+            </div>
+            <div class="form-group">
+                <label for="outputDeviceType">Original Output Device Type: <span style="color: red;">*</span></label>
+                <input type="text" id="outputDeviceType" name="outputDeviceType" required>
+            </div>
+            <div class="form-group">
+                <label for="outputDeviceBrandModel">Device Brand & Model (Output): <span style="color: red;">*</span></label>
+                <input type="text" id="outputDeviceBrandModel" name="outputDeviceBrandModel" required>
+            </div>
+            <div class="form-group">
+                <label for="inputDeviceType">Original Input Device Type: <span style="color: red;">*</span></label>
+                <input type="text" id="inputDeviceType" name="inputDeviceType" required>
+            </div>
+            <div class="form-group">
+                <label for="inputDeviceBrandModel">Device Brand & Model (Input): <span style="color: red;">*</span></label>
+                <input type="text" id="inputDeviceBrandModel" name="inputDeviceBrandModel" required>
+            </div>
+            <div class="form-group">
+                <label for="azimuthAngle">Azimuth Angle:</label>
+                <input type="text" id="azimuthAngle" name="azimuthAngle" value="0 degrees" disabled>
+            </div>
+        </form>
+        <button id="downloadBtn">Download JSON</button>
+        <div id="successMessage">✅ JSON file downloaded successfully!</div>
+        <div id="errorMessage">Please fill in all required fields.</div>
+    </div>
+    <script>
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const form = document.getElementById('metadataForm');
+            const formData = new FormData(form);
+            const requiredFields = [
+                'audioIdName', 'audioIdUsed', 'recordingEnvType', 'roomType', 'roomAcousticConditions',
+                'distance', 'noiseLevel', 'noiseType', 'outputDeviceType', 'outputDeviceBrandModel',
+                'inputDeviceType', 'inputDeviceBrandModel'
+            ];
+            let allFilled = true;
+            for (const field of requiredFields) {
+                if (!formData.get(field) || formData.get(field).trim() === '') {
+                    allFilled = false;
+                    break;
+                }
+            }
+            if (!allFilled) {
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+                return;
+            }
+            document.getElementById('errorMessage').style.display = 'none';
+            const data = {
+                "Audio_id/name": formData.get('audioIdName'),
+                "Audio_id used": formData.get('audioIdUsed'),
+                "Recording Environment Type": formData.get('recordingEnvType'),
+                "Room Type": formData.get('roomType'),
+                "Room Acoustic Conditions": formData.get('roomAcousticConditions'),
+                "Approximate Distance from Device to Microphone": formData.get('distance'),
+                "Background Noise Level": formData.get('noiseLevel'),
+                "Background Noise Type": formData.get('noiseType'),
+                "Original Output Device Type": formData.get('outputDeviceType'),
+                "Output Device Brand & Model": formData.get('outputDeviceBrandModel'),
+                "Original Input Device Type": formData.get('inputDeviceType'),
+                "Input Device Brand & Model": formData.get('inputDeviceBrandModel'),
+                "Azimuth Angle": "0 degrees"
+            };
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'recording_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('successMessage').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
